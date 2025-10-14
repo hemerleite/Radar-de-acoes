@@ -1,0 +1,38 @@
+name: schedule-crawler
+
+on:
+  schedule:
+    - cron: "0 */4 * * *"  # Executa a cada 4 horas
+  workflow_dispatch:       # Permite rodar manualmente
+
+jobs:
+  run-crawler:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Instalar dependências
+        run: |
+          pip install -r requirements.txt
+          pip install yfinance beautifulsoup4 pandas requests streamlit
+
+      - name: Executar crawler
+        run: |
+          python buscar_recomendacoes.py
+          python avaliar_performance.py
+
+      - name: Salvar alterações
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Atualização automática de recomendações"
+          git push
+        continue-on-error: true
